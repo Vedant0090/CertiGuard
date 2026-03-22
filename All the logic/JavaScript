@@ -1,0 +1,55 @@
+// 🔢 COUNTER ANIMATION — counts numbers up from 0
+function animateCounter(el, target) {
+  let n = 0;
+  const id = setInterval(() => {
+    n = Math.min(n + step, target); // increase by step each tick
+    el.innerHTML = n.toLocaleString(); // show formatted number
+    if (n >= target) clearInterval(id); // stop when done
+  }, 40);
+}
+
+// 📂 WHEN USER PICKS A FILE — show its name and size
+function showFile(file) {
+  selectedFile = file;
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = formatBytes(file.size);
+  filePreview.classList.add('show'); // reveal the file preview bar
+  verifyBtn.disabled = false;        // enable the verify button
+}
+
+// 🔘 SWITCH BETWEEN TIER 1 / TIER 2
+function selectMode(n) {
+  selectedMode = n;
+  document.getElementById('mode1').classList.toggle('selected', n === 1);
+  document.getElementById('mode2').classList.toggle('selected', n === 2);
+}
+
+// ⏳ VERIFICATION ANIMATION — lights up each step one by one
+function startVerification() {
+  const steps = selectedMode === 1 ? blockchain_steps : ai_steps;
+  // ...creates each step row, then lights them up with a delay
+  let current = 0;
+  const run = () => {
+    document.getElementById('step_' + current).className = 'step-item active';
+    current++;
+    setTimeout(run, 600 + Math.random() * 500); // random delay for realism
+  };
+}
+
+// 🏁 SHOW RESULT — picks random outcome (Authentic/Suspicious/Fraudulent)
+// In Phase 2, this will be replaced with real data from your Python backend
+function showResult() {
+  const r = outcomes[Math.floor(Math.random() * outcomes.length)];
+  document.getElementById('resultVerdict').textContent = r.verdict;
+  // fills in confidence bar, check items, icon, etc.
+}
+
+// ⬇️ DOWNLOAD REPORT — creates a .txt file and triggers download
+function downloadReport() {
+  const blob = new Blob([`CERTIGUARD REPORT\n...`], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'certiguard_report.txt';
+  a.click();
+}
+
