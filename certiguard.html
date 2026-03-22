@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CertiGuard — Academia Authenticity Validator</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:#0b0e13; --surface:#13181f; --surface2:#1c2330; --border:#2a3344;
+  --accent:#00e5a0; --accent2:#4f7fff; --warn:#ffb444; --danger:#ff5c5c;
+  --text:#e8edf5; --muted:#6b7a95;
+  --fh:'Syne',sans-serif; --fb:'DM Sans',sans-serif; --fm:'DM Mono',monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--fb);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,160,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,160,.03) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;top:-200px;left:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(0,229,160,.06) 0%,transparent 70%);pointer-events:none;z-index:0}
+.orb2{position:fixed;bottom:-200px;right:-200px;width:700px;height:700px;background:radial-gradient(circle,rgba(79,127,255,.07) 0%,transparent 70%);pointer-events:none;z-index:0}
+.wrap{max-width:1000px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+
+/* NAV */
+nav{padding:18px 0;border-bottom:1px solid var(--border);position:relative;z-index:10}
+.nav-inner{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;font-family:var(--fh);font-weight:800;font-size:20px;letter-spacing:-.5px}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px}
+.logo span{color:var(--accent)}
+.badge{font-family:var(--fm);font-size:10px;background:rgba(0,229,160,.1);border:1px solid rgba(0,229,160,.25);color:var(--accent);padding:3px 8px;border-radius:20px;letter-spacing:.5px}
+.badge.b2{background:rgba(79,127,255,.1);border-color:rgba(79,127,255,.25);color:var(--accent2)}
+.srv{display:flex;align-items:center;gap:6px;font-size:11px;font-family:var(--fm)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--border);transition:background .3s;flex-shrink:0}
+.dot.on{background:var(--accent);box-shadow:0 0 6px rgba(0,229,160,.5);animation:pulse 2s infinite}
+.dot.off{background:var(--danger)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:32px}
+.tab{padding:12px 24px;font-family:var(--fh);font-size:14px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* HERO */
+.hero{padding:60px 0 40px;text-align:center}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--fm);font-size:11px;color:var(--accent);border:1px solid rgba(0,229,160,.25);background:rgba(0,229,160,.07);padding:5px 14px;border-radius:20px;margin-bottom:20px;letter-spacing:1px;text-transform:uppercase;animation:fd .6s ease both}
+.hero-tag::before{content:'●';font-size:7px;animation:pulse 2s infinite}
+h1{font-family:var(--fh);font-size:clamp(32px,5vw,58px);font-weight:800;line-height:1.05;letter-spacing:-2px;margin-bottom:16px;animation:fd .6s .1s ease both}
+h1 em{font-style:normal;color:var(--accent)}
+.hero-sub{font-size:16px;color:var(--muted);max-width:520px;margin:0 auto 32px;line-height:1.7;animation:fd .6s .2s ease both}
+.tiers{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:40px;animation:fd .6s .3s ease both}
+.tier-pill{display:flex;align-items:center;gap:8px;padding:9px 18px;border-radius:40px;font-size:12px;font-weight:500;border:1px solid;transition:transform .2s}
+.tier-pill:hover{transform:translateY(-2px)}
+.tp1{background:rgba(0,229,160,.08);border-color:rgba(0,229,160,.3);color:var(--accent)}
+.tp2{background:rgba(79,127,255,.08);border-color:rgba(79,127,255,.3);color:var(--accent2)}
+.tp1 .d{background:var(--accent)} .tp2 .d{background:var(--accent2)}
+.d{width:6px;height:6px;border-radius:50%}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:32px;animation:fu .6s .4s ease both}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;text-align:center;transition:border-color .2s}
+.stat:hover{border-color:rgba(0,229,160,.3)}
+.sv{font-family:var(--fh);font-size:26px;font-weight:800;color:var(--accent);letter-spacing:-1px}
+.sl{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:24px;animation:fu .7s .35s ease both}
+.card-head{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2)}
+.card-title{font-family:var(--fh);font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.sn{width:22px;height:22px;background:var(--accent);color:#000;border-radius:50%;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+/* UPLOAD */
+.upload-sec{padding:28px 24px}
+.drop{border:2px dashed var(--border);border-radius:14px;padding:44px 20px;text-align:center;cursor:pointer;transition:all .25s;position:relative;background:rgba(0,0,0,.2)}
+.drop:hover,.drop.over{border-color:var(--accent);background:rgba(0,229,160,.04)}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uico{width:52px;height:52px;margin:0 auto 14px;background:linear-gradient(135deg,rgba(0,229,160,.15),rgba(79,127,255,.15));border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;transition:transform .25s}
+.drop:hover .uico{transform:translateY(-4px)}
+.utitle{font-family:var(--fh);font-size:16px;font-weight:700;margin-bottom:6px}
+.usub{font-size:12px;color:var(--muted)}
+.usub strong{color:var(--accent);font-weight:500}
+.ftags{display:flex;gap:6px;justify-content:center;margin-top:12px}
+.ftag{font-family:var(--fm);font-size:9px;padding:2px 8px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);color:var(--muted);letter-spacing:.5px}
+.fprev{display:none;align-items:center;gap:12px;background:rgba(0,229,160,.06);border:1px solid rgba(0,229,160,.2);border-radius:10px;padding:12px 16px;margin-top:14px}
+.fprev.show{display:flex}
+.fico{width:38px;height:38px;background:rgba(0,229,160,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.fname{font-family:var(--fm);font-size:12px;font-weight:500;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fsize{font-size:11px;color:var(--muted);margin-top:2px}
+.rm{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:4px;transition:color .2s}
+.rm:hover{color:var(--danger)}
+
+/* MODE */
+.mode-sec{padding:0 24px 24px;border-top:1px solid var(--border);padding-top:20px}
+.sec-lbl{font-family:var(--fm);font-size:10px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mc{background:var(--surface2);border:2px solid var(--border);border-radius:12px;padding:16px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.mc::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;opacity:0;transition:opacity .2s}
+.mc.t1::before{background:var(--accent)} .mc.t2::before{background:var(--accent2)}
+.mc.sel.t1{border-color:rgba(0,229,160,.4);background:rgba(0,229,160,.05)}
+.mc.sel.t2{border-color:rgba(79,127,255,.4);background:rgba(79,127,255,.05)}
+.mc.sel::before{opacity:1}
+.mc:hover{transform:translateY(-2px);border-color:rgba(255,255,255,.15)}
+.mi{font-size:20px;margin-bottom:8px}
+.mn{font-family:var(--fh);font-size:13px;font-weight:700;margin-bottom:3px}
+.md{font-size:11px;color:var(--muted);line-height:1.5}
+.mtag{display:inline-block;font-family:var(--fm);font-size:9px;padding:2px 6px;border-radius:20px;margin-top:6px;letter-spacing:.5px;text-transform:uppercase}
+.t1 .mtag{background:rgba(0,229,160,.12);color:var(--accent)}
+.t2 .mtag{background:rgba(79,127,255,.12);color:var(--accent2)}
+.ck{position:absolute;top:10px;right:10px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;opacity:0;transition:opacity .2s}
+.mc.sel.t1 .ck{background:var(--accent);color:#000;opacity:1}
+.mc.sel.t2 .ck{background:var(--accent2);color:#fff;opacity:1}
+
+/* VERIFY BTN */
+.vsec{padding:0 24px 24px}
+.btn-v{width:100%;padding:15px;background:var(--accent);color:#000;font-family:var(--fh);font-size:15px;font-weight:700;border:none;border-radius:12px;cursor:pointer;letter-spacing:.5px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:10px;position:relative;overflow:hidden}
+.btn-v::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.15),transparent);transform:translateX(-100%);transition:transform .5s}
+.btn-v:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,229,160,.3)}
+.btn-v:hover::after{transform:translateX(100%)}
+.btn-v:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* REGISTER FORM */
+.rform{padding:24px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg label{font-size:11px;color:var(--muted);font-family:var(--fm);letter-spacing:.5px;text-transform:uppercase}
+.fg input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;color:var(--text);font-family:var(--fb);font-size:13px;transition:border-color .2s}
+.fg input:focus{outline:none;border-color:var(--accent)}
+.btn-reg{width:100%;padding:14px;background:var(--accent2);color:#fff;font-family:var(--fh);font-size:14px;font-weight:700;border:none;border-radius:10px;cursor:pointer;transition:all .2s}
+.btn-reg:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(79,127,255,.3)}
+.btn-reg:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.reg-result{display:none;margin-top:16px;padding:16px;background:rgba(0,229,160,.08);border:1px solid rgba(0,229,160,.25);border-radius:10px}
+.reg-result.show{display:block}
+.reg-hash{font-family:var(--fm);font-size:11px;color:var(--accent);word-break:break-all;margin-top:6px}
+
+/* PROGRESS */
+.prog{display:none;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:24px}
+.prog.show{display:block;animation:fu .4s ease both}
+.prog-title{font-family:var(--fh);font-size:15px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.spin{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.steps{display:flex;flex-direction:column;gap:9px}
+.si{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);transition:color .3s}
+.si.done{color:var(--text)} .si.act{color:var(--accent)}
+.sd{width:7px;height:7px;border-radius:50%;background:var(--border);flex-shrink:0;transition:background .3s}
+.si.done .sd{background:var(--accent)}
+.si.act .sd{background:var(--accent);box-shadow:0 0 0 3px rgba(0,229,160,.2);animation:pulse 1s infinite}
+
+/* ERROR */
+.err{display:none;background:rgba(255,92,92,.08);border:1px solid rgba(255,92,92,.3);border-radius:10px;padding:14px 18px;margin-bottom:18px;color:var(--danger);font-size:13px}
+.err.show{display:block}
+
+/* RESULT */
+.res{display:none;background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:24px}
+.res.show{display:block;animation:fu .5s ease both}
+.res-head{padding:22px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border)}
+.ri{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.ri.auth{background:rgba(0,229,160,.15)} .ri.susp{background:rgba(255,180,68,.15)} .ri.fake{background:rgba(255,92,92,.15)}
+.rv{font-family:var(--fh);font-size:22px;font-weight:800;letter-spacing:-.5px}
+.rv.auth{color:var(--accent)} .rv.susp{color:var(--warn)} .rv.fake{color:var(--danger)}
+.rs{font-size:12px;color:var(--muted);margin-top:2px}
+.res-body{padding:22px 24px}
+.hbox{font-family:var(--fm);font-size:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:9px 12px;margin-bottom:18px;color:var(--muted);word-break:break-all}
+.hbox span{color:var(--accent)}
+.cbar{margin-bottom:20px}
+.cl{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:7px;font-family:var(--fm)}
+.ct{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
+.cf{height:100%;border-radius:3px;transition:width 1s cubic-bezier(.4,0,.2,1);width:0}
+.cf.auth{background:linear-gradient(90deg,var(--accent),#00ffb3)}
+.cf.susp{background:linear-gradient(90deg,var(--warn),#ffdd88)}
+.cf.fake{background:linear-gradient(90deg,var(--danger),#ff9b9b)}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px}
+.ci{display:flex;align-items:flex-start;gap:9px;padding:11px 13px;background:var(--surface2);border-radius:9px;border:1px solid var(--border)}
+.cs{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px}
+.cs.pass{background:rgba(0,229,160,.15);color:var(--accent)}
+.cs.fail{background:rgba(255,92,92,.15);color:var(--danger)}
+.cs.warn{background:rgba(255,180,68,.15);color:var(--warn)}
+.cn{font-size:12px;font-weight:500}
+.cd{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* OCR PREVIEW */
+.ocr-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:18px}
+.ocr-lbl{font-family:var(--fm);font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.ocr-text{font-size:11px;color:var(--text);line-height:1.7;font-family:var(--fm);opacity:.8;max-height:80px;overflow:hidden;position:relative}
+.ocr-text::after{content:'';position:absolute;bottom:0;left:0;right:0;height:24px;background:linear-gradient(transparent,var(--surface2))}
+
+/* RESULT FOOTER */
+.res-foot{padding:14px 24px;border-top:1px solid var(--border);background:var(--surface2);display:flex;gap:8px;flex-wrap:wrap}
+.btn-s{padding:8px 16px;background:transparent;border:1px solid var(--border);color:var(--text);border-radius:7px;cursor:pointer;font-size:12px;font-family:var(--fb);transition:all .2s;display:flex;align-items:center;gap:5px}
+.btn-s:hover{border-color:var(--accent);color:var(--accent)}
+
+footer{border-top:1px solid var(--border);padding:20px 0;text-align:center;font-size:11px;color:var(--muted);position:relative;z-index:1;margin-top:40px}
+footer span{color:var(--accent)}
+
+@keyframes fd{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fu{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:600px){
+  .mode-grid,.cgrid,.form-grid,.stats{grid-template-columns:1fr}
+  h1{letter-spacing:-1px}
+  .tabs .tab{padding:10px 14px;font-size:12px}
+}
+</style>
+</head>
+<body>
+<div class="orb2"></div>
+
+<nav>
+  <div class="wrap">
+    <div class="nav-inner">
+      <div class="logo"><div class="logo-icon">🛡️</div>Certi<span>Guard</span></div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div class="srv"><div class="dot" id="sDot"></div><span id="sTxt" style="color:var(--muted)">checking…</span></div>
+        <span class="badge">MVP v1.0</span>
+        <span class="badge b2">SIH 2025</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-tag">Academia Authenticity Validator</div>
+    <h1>Stop fake certificates<br/><em>before they cause damage</em></h1>
+    <p class="hero-sub">Dual-tier verification — blockchain hashing + AI forensic analysis. Real OCR, seal detection, tampering checks.</p>
+    <div class="tiers">
+      <div class="tier-pill tp1"><span class="d"></span>Tier 1 — Hash Verification</div>
+      <div class="tier-pill tp2"><span class="d"></span>Tier 2 — AI Forensic Analysis</div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="stats">
+    <div class="stat"><div class="sv" id="c1">0</div><div class="sl">Certificates verified</div></div>
+    <div class="stat"><div class="sv" style="color:var(--danger)" id="c2">0</div><div class="sl">Frauds detected</div></div>
+    <div class="stat"><div class="sv" id="c3">—</div><div class="sl">Backend status</div></div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('verify',this)">🔍 &nbsp;Verify Certificate</button>
+    <button class="tab" onclick="switchTab('register',this)">📋 &nbsp;Register Certificate</button>
+    <button class="tab" onclick="switchTab('about',this)">ℹ️ &nbsp;How it works</button>
+  </div>
+
+  <!-- ══════════ TAB: VERIFY ══════════ -->
+  <div class="tab-panel active" id="tab-verify">
+    <div class="err" id="errBox"></div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><div class="sn">1</div>Upload certificate</div>
+        <span style="font-size:11px;color:var(--muted)">PDF, PNG or JPG · max 10MB</span>
+      </div>
+      <div class="upload-sec">
+        <div class="drop" id="dropZone">
+          <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg"/>
+          <div class="uico">📄</div>
+          <div class="utitle">Drop your certificate here</div>
+          <p class="usub">Supports <strong>PDF</strong>, <strong>PNG</strong> and <strong>JPG</strong></p>
+          <div class="ftags"><span class="ftag">.PDF</span><span class="ftag">.PNG</span><span class="ftag">.JPG</span></div>
+        </div>
+        <div class="fprev" id="fprev">
+          <div class="fico" id="fico">📄</div>
+          <div style="flex:1;min-width:0">
+            <div class="fname" id="fname">file.pdf</div>
+            <div class="fsize" id="fsize">0 KB</div>
+          </div>
+          <button class="rm" id="rmBtn">✕</button>
+        </div>
+      </div>
+
+      <div class="mode-sec">
+        <div class="sec-lbl">Verification mode</div>
+        <div class="mode-grid">
+          <div class="mc t1 sel" id="m1" onclick="selMode(1)">
+            <div class="ck">✓</div>
+            <div class="mi">⛓️</div>
+            <div class="mn">Hash Verification</div>
+            <div class="md">Check SHA-256 hash against the local certificate database.</div>
+            <span class="mtag">Tier 1</span>
+          </div>
+          <div class="mc t2" id="m2" onclick="selMode(2)">
+            <div class="ck">✓</div>
+            <div class="mi">🔬</div>
+            <div class="mn">AI Forensic Analysis</div>
+            <div class="md">OCR text, seal detection, signature check, tampering analysis.</div>
+            <span class="mtag">Tier 2</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="vsec">
+        <button class="btn-v" id="vBtn" onclick="startVerify()" disabled>🔍 &nbsp;Verify Certificate</button>
+      </div>
+    </div>
+
+    <div class="prog" id="prog">
+      <div class="prog-title"><div class="spin"></div><span id="progTitle">Analysing certificate…</span></div>
+      <div class="steps" id="stepsList"></div>
+    </div>
+
+    <div class="res" id="resCard">
+      <div class="res-head">
+        <div class="ri" id="rIcon"></div>
+        <div>
+          <div class="rv" id="rVerdict"></div>
+          <div class="rs" id="rSub"></div>
+        </div>
+      </div>
+      <div class="res-body">
+        <div class="hbox" id="hBox"></div>
+        <div id="ocrBox" style="display:none">
+          <div class="ocr-box">
+            <div class="ocr-lbl">OCR extracted text preview</div>
+            <div class="ocr-text" id="ocrText"></div>
+          </div>
+        </div>
+        <div class="cbar">
+          <div class="cl"><span>Confidence score</span><span id="cVal">—</span></div>
+          <div class="ct"><div class="cf" id="cFill"></div></div>
+        </div>
+        <div class="cgrid" id="cGrid"></div>
+      </div>
+      <div class="res-foot">
+        <button class="btn-s" onclick="resetAll()">🔄 Verify another</button>
+        <button class="btn-s" onclick="dlReport()">⬇️ Download report</button>
+        <button class="btn-s" onclick="flagManual()">🚩 Flag for review</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB: REGISTER ══════════ -->
+  <div class="tab-panel" id="tab-register">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><div class="sn">R</div>Register a new certificate</div>
+        <span style="font-size:11px;color:var(--muted)">For universities / institutions</span>
+      </div>
+      <div class="rform">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">
+          Upload a certificate file to compute its SHA-256 hash and store it in the database.
+          Once registered, uploading the same file in Verify mode will show <strong style="color:var(--accent)">Authentic</strong>.
+        </p>
+        <div class="form-grid">
+          <div class="fg"><label>Student name</label><input id="rName" type="text" placeholder="e.g. Rahul Sharma"/></div>
+          <div class="fg"><label>Course / degree</label><input id="rCourse" type="text" placeholder="e.g. B.Tech Computer Science"/></div>
+          <div class="fg"><label>Institution</label><input id="rInst" type="text" placeholder="e.g. IIT Delhi"/></div>
+          <div class="fg"><label>Year</label><input id="rYear" type="text" placeholder="e.g. 2024"/></div>
+        </div>
+
+        <div class="drop" id="rDrop" style="margin-bottom:16px">
+          <input type="file" id="rFile" accept=".pdf,.png,.jpg,.jpeg"/>
+          <div class="uico">📂</div>
+          <div class="utitle">Upload certificate file</div>
+          <p class="usub">The file will be hashed and stored</p>
+        </div>
+        <div class="fprev" id="rPrev">
+          <div class="fico" id="rIco">📄</div>
+          <div style="flex:1;min-width:0"><div class="fname" id="rFname">file.pdf</div><div class="fsize" id="rFsize">0 KB</div></div>
+          <button class="rm" id="rRm">✕</button>
+        </div>
+
+        <button class="btn-reg" id="regBtn" onclick="doRegister()" style="margin-top:16px" disabled>
+          📋 &nbsp;Register Certificate
+        </button>
+
+        <div class="reg-result" id="regRes">
+          <div style="font-size:13px;font-weight:600;color:var(--accent)">✅ Certificate registered successfully!</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:4px">SHA-256 hash stored in database</div>
+          <div class="reg-hash" id="regHash"></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:8px">
+            Now upload this same file in the <strong style="color:var(--text)">Verify</strong> tab to confirm it shows <strong style="color:var(--accent)">Authentic</strong>.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB: ABOUT ══════════ -->
+  <div class="tab-panel" id="tab-about">
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><div class="sn">?</div>How CertiGuard works</div>
+      </div>
+      <div style="padding:24px;display:flex;flex-direction:column;gap:20px">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px">
+            <div style="font-size:20px;margin-bottom:10px">⛓️</div>
+            <div style="font-family:var(--fh);font-size:14px;font-weight:700;color:var(--accent);margin-bottom:8px">Tier 1 — Hash Verification</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.7">
+              Every certificate gets a unique SHA-256 fingerprint (hash).
+              When a university issues a certificate, its hash is stored in the database.
+              To verify, the same file is hashed again and compared — even one pixel change produces a completely different hash, instantly detecting tampering.
+            </div>
+          </div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px">
+            <div style="font-size:20px;margin-bottom:10px">🔬</div>
+            <div style="font-family:var(--fh);font-size:14px;font-weight:700;color:var(--accent2);margin-bottom:8px">Tier 2 — AI Forensic Analysis</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.7">
+              For legacy certificates without a hash record, AI analysis runs automatically.
+              Tesseract OCR extracts text to find certificate keywords and institution names.
+              OpenCV detects circular seals, signature regions, and analyses noise patterns for copy-paste tampering artifacts.
+            </div>
+          </div>
+        </div>
+
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:18px">
+          <div style="font-family:var(--fh);font-size:13px;font-weight:700;margin-bottom:12px">What each AI check does</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px">
+            <div style="font-size:11px;color:var(--muted);line-height:1.6"><strong style="color:var(--text)">OCR Extraction</strong><br/>Tesseract reads all text from the image — finds names, roll numbers, dates, institution names.</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.6"><strong style="color:var(--text)">Keyword Check</strong><br/>Scans for 30+ certificate keywords like "certify", "awarded", "degree", "examination".</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.6"><strong style="color:var(--text)">Seal Detection</strong><br/>OpenCV's Hough Circle Transform finds circular stamps and seals in the image.</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.6"><strong style="color:var(--text)">Signature Check</strong><br/>Finds dark flowing strokes in the lower half of the image typical of signatures.</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.6"><strong style="color:var(--text)">Tampering Check</strong><br/>Analyses noise consistency across image grid — inconsistent patterns indicate copy-paste edits.</div>
+            <div style="font-size:11px;color:var(--muted);line-height:1.6"><strong style="color:var(--text)">Institution Match</strong><br/>Checks text against a database of known Indian universities, IITs, NITs, and boards.</div>
+          </div>
+        </div>
+
+        <div style="background:rgba(0,229,160,.05);border:1px solid rgba(0,229,160,.2);border-radius:12px;padding:16px">
+          <div style="font-size:12px;color:var(--muted);line-height:1.7">
+            <strong style="color:var(--accent)">Tech stack:</strong> Python · Flask · Tesseract OCR · OpenCV · NumPy · PyPDF2 · Pillow · SHA-256 hashing<br/>
+            <strong style="color:var(--accent)">Built for:</strong> Smart India Hackathon 2025 · Team Hack4Good
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    Built for <span>Smart India Hackathon 2025</span> &nbsp;·&nbsp; CertiGuard by Hack4Good &nbsp;·&nbsp; MVP v1.0 · Phase 3
+  </div>
+</footer>
+
+<script>
+const API = "http://localhost:5000";
+let selFile = null, regFile = null, lastRes = null, mode = 1;
+
+// ── Tab switching ────────────────────────────────
+function switchTab(name, btn) {
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + name).classList.add("active");
+  btn.classList.add("active");
+}
+
+// ── Server health check ──────────────────────────
+async function checkSrv() {
+  try {
+    const r = await fetch(API + "/health", { signal: AbortSignal.timeout(3000) });
+    if (r.ok) {
+      document.getElementById("sDot").className = "dot on";
+      document.getElementById("sTxt").textContent = "backend online";
+      document.getElementById("sTxt").style.color = "var(--accent)";
+      document.getElementById("c3").textContent = "Online";
+      document.getElementById("c3").style.color = "var(--accent)";
+    }
+  } catch {
+    document.getElementById("sDot").className = "dot off";
+    document.getElementById("sTxt").textContent = "backend offline";
+    document.getElementById("sTxt").style.color = "var(--danger)";
+    document.getElementById("c3").textContent = "Offline";
+    document.getElementById("c3").style.color = "var(--danger)";
+  }
+}
+checkSrv();
+setInterval(checkSrv, 10000);
+
+// ── Counter animation ────────────────────────────
+function animCount(el, target) {
+  let n = 0, step = Math.ceil(target / 40);
+  const id = setInterval(() => {
+    n = Math.min(n + step, target);
+    el.textContent = n.toLocaleString();
+    if (n >= target) clearInterval(id);
+  }, 40);
+}
+window.addEventListener("load", () => {
+  setTimeout(() => {
+    animCount(document.getElementById("c1"), 12847);
+    animCount(document.getElementById("c2"), 342);
+  }, 600);
+});
+
+// ── File helpers ─────────────────────────────────
+function fmt(b) {
+  if (b < 1024) return b + " B";
+  if (b < 1048576) return (b/1024).toFixed(1) + " KB";
+  return (b/1048576).toFixed(1) + " MB";
+}
+function extIcon(name) {
+  const e = name.split(".").pop().toLowerCase();
+  return { pdf:"📄", png:"🖼️", jpg:"🖼️", jpeg:"🖼️" }[e] || "📁";
+}
+
+// ── Verify: file handling ────────────────────────
+const dropZone = document.getElementById("dropZone");
+const fileInput = document.getElementById("fileInput");
+dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("over"); });
+dropZone.addEventListener("dragleave", () => dropZone.classList.remove("over"));
+dropZone.addEventListener("drop", e => { e.preventDefault(); dropZone.classList.remove("over"); if (e.dataTransfer.files[0]) setFile(e.dataTransfer.files[0]); });
+fileInput.addEventListener("change", e => { if (e.target.files[0]) setFile(e.target.files[0]); });
+
+function setFile(f) {
+  selFile = f;
+  document.getElementById("fico").textContent = extIcon(f.name);
+  document.getElementById("fname").textContent = f.name;
+  document.getElementById("fsize").textContent = fmt(f.size);
+  document.getElementById("fprev").classList.add("show");
+  document.getElementById("vBtn").disabled = false;
+  hideErr();
+}
+document.getElementById("rmBtn").addEventListener("click", () => {
+  selFile = null; fileInput.value = "";
+  document.getElementById("fprev").classList.remove("show");
+  document.getElementById("vBtn").disabled = true;
+});
+
+// ── Register: file handling ──────────────────────
+const rDrop = document.getElementById("rDrop");
+const rInput = document.getElementById("rFile");
+rDrop.addEventListener("dragover", e => { e.preventDefault(); rDrop.classList.add("over"); });
+rDrop.addEventListener("dragleave", () => rDrop.classList.remove("over"));
+rDrop.addEventListener("drop", e => { e.preventDefault(); rDrop.classList.remove("over"); if (e.dataTransfer.files[0]) setRegFile(e.dataTransfer.files[0]); });
+rInput.addEventListener("change", e => { if (e.target.files[0]) setRegFile(e.target.files[0]); });
+function setRegFile(f) {
+  regFile = f;
+  document.getElementById("rIco").textContent = extIcon(f.name);
+  document.getElementById("rFname").textContent = f.name;
+  document.getElementById("rFsize").textContent = fmt(f.size);
+  document.getElementById("rPrev").classList.add("show");
+  document.getElementById("regBtn").disabled = false;
+}
+document.getElementById("rRm").addEventListener("click", () => {
+  regFile = null; rInput.value = "";
+  document.getElementById("rPrev").classList.remove("show");
+  document.getElementById("regBtn").disabled = true;
+});
+
+// ── Mode selection ───────────────────────────────
+function selMode(n) {
+  mode = n;
+  document.getElementById("m1").classList.toggle("sel", n === 1);
+  document.getElementById("m2").classList.toggle("sel", n === 2);
+}
+
+// ── Error helpers ────────────────────────────────
+function showErr(msg) {
+  const b = document.getElementById("errBox");
+  b.textContent = "⚠ " + msg; b.classList.add("show");
+  b.scrollIntoView({ behavior:"smooth", block:"center" });
+}
+function hideErr() { document.getElementById("errBox").classList.remove("show"); }
+
+// ── Progress animation ───────────────────────────
+const STEPS1 = [
+  "Reading certificate file…",
+  "Computing SHA-256 hash…",
+  "Querying certificate database…",
+  "Comparing hash with records…",
+  "Running basic file checks…",
+  "Generating verification report…"
+];
+const STEPS2 = [
+  "Reading certificate file…",
+  "Running Tesseract OCR…",
+  "Checking certificate keywords…",
+  "Matching institution names…",
+  "Detecting seals with OpenCV…",
+  "Analysing signature regions…",
+  "Checking noise / tampering…",
+  "Calculating confidence score…"
+];
+
+function animSteps(steps, onDone) {
+  const list = document.getElementById("stepsList");
+  list.innerHTML = "";
+  steps.forEach((s, i) => {
+    const d = document.createElement("div");
+    d.className = "si"; d.id = "s" + i;
+    d.innerHTML = `<div class="sd"></div><span>${s}</span>`;
+    list.appendChild(d);
+  });
+  let cur = 0;
+  const go = () => {
+    if (cur > 0) document.getElementById("s" + (cur-1)).className = "si done";
+    if (cur < steps.length) {
+      document.getElementById("s" + cur).className = "si act";
+      cur++;
+      setTimeout(go, 500 + Math.random() * 400);
+    } else {
+      setTimeout(onDone, 200);
+    }
+  };
+  go();
+}
+
+// ── VERIFY ───────────────────────────────────────
+async function startVerify() {
+  if (!selFile) return;
+  hideErr();
+  document.getElementById("prog").classList.add("show");
+  document.getElementById("resCard").classList.remove("show");
+  document.getElementById("vBtn").disabled = true;
+  document.getElementById("progTitle").textContent =
+    mode === 1 ? "Verifying hash against database…" : "Running AI forensic analysis…";
+  document.getElementById("prog").scrollIntoView({ behavior:"smooth", block:"center" });
+
+  animSteps(mode === 1 ? STEPS1 : STEPS2, async () => {
+    try {
+      const fd = new FormData();
+      fd.append("file", selFile);
+      fd.append("mode", String(mode));
+
+      const resp = await fetch(API + "/verify", { method:"POST", body:fd });
+      if (!resp.ok) {
+        const e = await resp.json();
+        throw new Error(e.error || "Server error " + resp.status);
+      }
+      const data = await resp.json();
+      lastRes = data;
+      showResult(data);
+    } catch(e) {
+      document.getElementById("prog").classList.remove("show");
+      document.getElementById("vBtn").disabled = false;
+      if (e.message.includes("fetch") || e.message.includes("Failed")) {
+        showErr("Cannot reach backend. Make sure python app.py is running.");
+      } else {
+        showErr(e.message);
+      }
+    }
+  });
+}
+
+// ── SHOW RESULT ──────────────────────────────────
+function showResult(r) {
+  document.getElementById("prog").classList.remove("show");
+  const card = document.getElementById("resCard");
+  card.classList.add("show");
+
+  const vm = {
+    "Authentic":  { cls:"auth", icon:"✅" },
+    "Suspicious": { cls:"susp", icon:"⚠️" },
+    "Fraudulent": { cls:"fake", icon:"🚫" }
+  };
+  const v = vm[r.verdict] || { cls:"susp", icon:"❓" };
+
+  document.getElementById("rIcon").className = "ri " + v.cls;
+  document.getElementById("rIcon").textContent = v.icon;
+  document.getElementById("rVerdict").textContent = r.verdict;
+  document.getElementById("rVerdict").className = "rv " + v.cls;
+  document.getElementById("rSub").textContent = r.message || "";
+
+  // Hash
+  document.getElementById("hBox").innerHTML =
+    `<span>SHA-256</span> &nbsp;${r.hash || "N/A"}<br/>` +
+    `<span>Mode</span> &nbsp;${r.mode || "—"} &nbsp;|&nbsp; ` +
+    `<span>File</span> &nbsp;${r.file_type || "—"} &nbsp;|&nbsp; ` +
+    `<span>DB match</span> &nbsp;${r.blockchain_found ? "✓ YES" : "✗ NO"}`;
+
+  // OCR preview
+  if (r.extracted_text_preview && r.extracted_text_preview.trim().length > 10) {
+    document.getElementById("ocrBox").style.display = "block";
+    document.getElementById("ocrText").textContent = r.extracted_text_preview;
+  } else {
+    document.getElementById("ocrBox").style.display = "none";
+  }
+
+  // Confidence bar
+  const conf = r.confidence || 0;
+  document.getElementById("cVal").textContent = conf + "%";
+  const fill = document.getElementById("cFill");
+  fill.className = "cf " + v.cls;
+  setTimeout(() => fill.style.width = conf + "%", 100);
+
+  // Checks
+  const icons = { pass:"✓", fail:"✕", warn:"!" };
+  document.getElementById("cGrid").innerHTML = (r.checks || []).map(c => `
+    <div class="ci">
+      <div class="cs ${c.status}">${icons[c.status]||"?"}</div>
+      <div><div class="cn">${c.name}</div><div class="cd">${c.detail}</div></div>
+    </div>`).join("");
+
+  card.scrollIntoView({ behavior:"smooth", block:"start" });
+  document.getElementById("vBtn").disabled = false;
+}
+
+// ── REGISTER ─────────────────────────────────────
+async function doRegister() {
+  if (!regFile) return;
+  const btn = document.getElementById("regBtn");
+  btn.disabled = true;
+  btn.textContent = "Registering…";
+  document.getElementById("regRes").classList.remove("show");
+
+  try {
+    const fd = new FormData();
+    fd.append("file", regFile);
+    fd.append("student_name", document.getElementById("rName").value || "Unknown");
+    fd.append("course_name",  document.getElementById("rCourse").value || "Unknown");
+    fd.append("institution",  document.getElementById("rInst").value || "Unknown");
+
+    const resp = await fetch(API + "/register", { method:"POST", body:fd });
+    const data = await resp.json();
+
+    if (!resp.ok) throw new Error(data.error || "Registration failed");
+
+    document.getElementById("regHash").textContent = "Hash: " + (data.file_hash || "");
+    document.getElementById("regRes").classList.add("show");
+    document.getElementById("regRes").scrollIntoView({ behavior:"smooth", block:"center" });
+
+  } catch(e) {
+    alert("Registration failed: " + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "📋  Register Certificate";
+  }
+}
+
+// ── UTILITY ──────────────────────────────────────
+function resetAll() {
+  document.getElementById("resCard").classList.remove("show");
+  document.getElementById("prog").classList.remove("show");
+  document.getElementById("rmBtn").click();
+  hideErr();
+  window.scrollTo({ top:0, behavior:"smooth" });
+}
+
+function dlReport() {
+  if (!lastRes) return;
+  const r = lastRes;
+  const lines = [
+    "CERTIGUARD VERIFICATION REPORT",
+    "=".repeat(44), "",
+    "File     : " + (selFile ? selFile.name : "unknown"),
+    "Date     : " + new Date().toLocaleString(),
+    "Mode     : " + (r.mode || "—"),
+    "File type: " + (r.file_type || "—"), "",
+    "VERDICT   : " + r.verdict,
+    "Confidence: " + r.confidence + "%",
+    "Hash      : " + r.hash,
+    "DB match  : " + (r.blockchain_found ? "YES" : "NO"), "",
+    "OCR TEXT PREVIEW:",
+    r.extracted_text_preview || "(none)", "",
+    "CHECK RESULTS:",
+    ...(r.checks || []).map(c => `  [${c.status.toUpperCase()}] ${c.name}: ${c.detail}`), "",
+    r.message
+  ];
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([lines.join("\n")], { type:"text/plain" }));
+  a.download = "certiguard_report_" + Date.now() + ".txt";
+  a.click();
+}
+
+function flagManual() {
+  alert("✅ Certificate flagged for manual review.\n\nAn alert would be sent to the admin panel in a production deployment.");
+}
+</script>
+</body>
+</html>

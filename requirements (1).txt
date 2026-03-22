@@ -1,0 +1,24 @@
+# CertiGuard — Python Dependencies (Phase 3)
+# Install all of these by running:
+#   pip install -r requirements.txt
+
+# ── Core web server ──────────────────────────────────────
+flask==3.0.0
+flask-cors==4.0.0
+
+# ── PDF support ──────────────────────────────────────────
+PyPDF2==3.0.1
+
+# ── Image support ────────────────────────────────────────
+Pillow==10.2.0
+
+# ── Phase 3: OCR ─────────────────────────────────────────
+pytesseract==0.3.10
+
+# ── Phase 3: Computer vision (seal & tampering detection)
+opencv-python==4.9.0.80
+numpy==1.26.4
+
+# ── Phase 4 (install later) ──────────────────────────────
+# web3==6.15.0          # Ethereum/Polygon blockchain
+# qrcode==7.4.2         # QR code generation
