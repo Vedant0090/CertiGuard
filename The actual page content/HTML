@@ -1,0 +1,63 @@
+<!-- 🔝 TOP BAR / NAVIGATION -->
+<nav>
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    Certi<span>Guard</span>     <!-- "Guard" is green -->
+  </div>
+  <span class="badge">BETA v0.1</span>
+  <span class="badge">SIH 2025</span>
+</nav>
+
+<!-- 🦸 HERO SECTION — big headline at the top -->
+<section class="hero">
+  <div class="hero-tag">Academia Authenticity Validator</div>
+  <h1>Stop fake certificates<br/><em>before they cause damage</em></h1>
+  <p class="hero-sub">Dual-tier verification using blockchain...</p>
+
+  <!-- the two pill badges: Tier 1 and Tier 2 -->
+  <div class="tiers">
+    <div class="tier-pill tier-1">Tier 1 — Blockchain Verification</div>
+    <div class="tier-pill tier-2">Tier 2 — AI Forensic Analysis</div>
+  </div>
+</section>
+
+<!-- 📊 STATS ROW — 3 numbers at the top -->
+<div class="stats-row">
+  <div class="stat-card">
+    <div id="counter1">0</div>       <!-- counts up to 12,847 -->
+    <div>Certificates verified</div>
+  </div>
+  <div class="stat-card">
+    <div id="counter2">0</div>       <!-- counts up to 342 -->
+    <div>Frauds detected</div>
+  </div>
+  <div class="stat-card">
+    <div id="counter3">0ms</div>     <!-- shows 1.2s -->
+    <div>Avg. verification time</div>
+  </div>
+</div>
+
+<!-- 📁 UPLOAD BOX -->
+<div class="drop-zone">
+  <input type="file" id="fileInput" accept=".pdf,.png,.jpg,.jpeg"/>
+  <!-- ↑ invisible file picker stretched over the whole box -->
+  <div class="upload-icon">📄</div>
+  <div class="upload-title">Drop your certificate here</div>
+</div>
+
+<!-- 🔘 MODE SELECTION — Tier 1 or Tier 2 -->
+<div class="mode-card tier1 selected" onclick="selectMode(1)">
+  <div class="mode-icon">⛓️</div>
+  <div class="mode-name">Blockchain Verify</div>
+  <div class="mode-desc">New certificates with QR code...</div>
+</div>
+<div class="mode-card tier2" onclick="selectMode(2)">
+  <div class="mode-icon">🔬</div>
+  <div class="mode-name">AI Forensic Analysis</div>
+</div>
+
+<!-- 🟢 VERIFY BUTTON — disabled until file is uploaded -->
+<button class="btn-verify" id="verifyBtn" onclick="startVerification()" disabled>
+  🔍 Verify Certificate
+</button>
+
