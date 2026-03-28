@@ -1,0 +1,96 @@
+CERTIGUARD PHASE 3 — SETUP GUIDE
+==============================================
+How to install the AI / OCR components
+==============================================
+
+Phase 3 adds two powerful tools:
+  1. Tesseract OCR  — reads text from certificate images
+  2. OpenCV         — detects seals, signatures, tampering
+
+
+STEP 1 — Install Tesseract OCR engine (Windows)
+------------------------------------------------
+Tesseract is a separate program (not a Python package).
+You must install it before pytesseract will work.
+
+  1. Go to: https://github.com/UB-Mannheim/tesseract/wiki
+  2. Download the installer: tesseract-ocr-w64-setup-5.x.x.exe
+  3. Run the installer — use all default settings
+  4. IMPORTANT: During install, note the install path.
+     It will be something like:
+       C:\Program Files\Tesseract-OCR\tesseract.exe
+
+  5. After installing, open app.py and add this line
+     near the top (after the imports):
+
+       import pytesseract
+       pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+     (Or paste your actual install path if different)
+
+
+STEP 2 — Install Python packages
+---------------------------------
+In your CMD terminal inside the certiguard folder:
+
+  pip install -r requirements.txt
+
+This installs:
+  - pytesseract  (Python wrapper for Tesseract)
+  - opencv-python  (image processing)
+  - numpy  (math library for image arrays)
+  - All Phase 2 packages (flask, PyPDF2, Pillow)
+
+
+STEP 3 — Restart the server
+-----------------------------
+Stop the old server with CTRL+C, then:
+
+  python app.py
+
+You should now see no warning messages about
+missing packages.
+
+
+STEP 4 — Test it
+-----------------
+Upload a PNG or JPG certificate image and select
+"AI Forensic Analysis" (Tier 2).
+
+You will now see REAL results for:
+  - OCR text extraction (actual words found)
+  - Certificate keyword detection
+  - Institution name check
+  - Seal / stamp detection
+  - Signature region detection
+  - Tampering/noise analysis
+  - Border detection
+
+
+TROUBLESHOOTING
+---------------
+Problem: "TesseractNotFoundError"
+Fix: Tesseract is not installed or wrong path.
+     Double-check Step 1 and update app.py with
+     the correct tesseract_cmd path.
+
+Problem: "No module named cv2"
+Fix: Run: pip install opencv-python
+
+Problem: "No module named numpy"
+Fix: Run: pip install numpy
+
+Problem: Server crashes on startup
+Fix: Check that ocr_analysis.py and image_forensics.py
+     are in the same folder as app.py and verifier.py
+
+
+YOUR PHASE 3 FILES
+------------------
+  app.py              - web server (unchanged)
+  verifier.py         - UPDATED: now calls OCR + forensics
+  ocr_analysis.py     - NEW: text extraction & keyword checks
+  image_forensics.py  - NEW: seal, signature, tampering detection
+  register.py         - unchanged
+  requirements.txt    - UPDATED: added opencv, numpy, pytesseract
+  certiguard.html     - unchanged (frontend already works)
